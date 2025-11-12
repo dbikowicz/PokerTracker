@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'account_screen.dart';
+import '../services/database_test_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -28,6 +29,18 @@ class DashboardScreen extends StatelessWidget {
             ),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bug_report),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DatabaseTestScreen()),
+              );
+            },
+            tooltip: 'Test Database',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
