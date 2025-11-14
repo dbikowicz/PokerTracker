@@ -134,7 +134,7 @@ class Session {
     );
   }
 
-  // Copy with method for updating sessions (especially for ending live sessions)
+  // Copy with method for updating sessions
   Session copyWith({
     String? id,
     String? gameType,
