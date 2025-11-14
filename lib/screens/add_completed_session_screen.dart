@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import '../models/session.dart';
 import '../services/database_service.dart';
@@ -84,56 +85,148 @@ class _AddCompletedSessionScreenState extends State<AddCompletedSessionScreen> {
     return DateTime(date.year, date.month, date.day, time.hour, time.minute);
   }
 
-  Future<void> _selectStartDate() async {
-    final DateTime? picked = await showDatePicker(
+  Future<void> _selectStartDateTime() async {
+    DateTime tempDateTime = _combineDateAndTime(_startDate, _startTime);
+    
+    showModalBottomSheet(
       context: context,
-      initialDate: _startDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      builder: (BuildContext builder) {
+        return Container(
+          height: 300,
+          color: Theme.of(context).colorScheme.surface,
+          child: Column(
+            children: [
+              // Header with Cancel and Done
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const Text(
+                    'Select Start Time',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextButton(
+                    child: Text(
+                      'Done',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _startDate = tempDateTime;
+                        _startTime = TimeOfDay(hour: tempDateTime.hour, minute: tempDateTime.minute);
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+              // DateTime Picker
+              Expanded(
+                child: CupertinoTheme(
+                  data: CupertinoThemeData(
+                    brightness: Brightness.dark,
+                    textTheme: CupertinoTextThemeData(
+                      dateTimePickerTextStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.dateAndTime,
+                    use24hFormat: false, // 12-hour format with AM/PM
+                    initialDateTime: tempDateTime,
+                    minimumDate: DateTime(2020),
+                    maximumDate: DateTime.now(),
+                    onDateTimeChanged: (DateTime newDateTime) {
+                      tempDateTime = newDateTime;
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
-    if (picked != null) {
-      setState(() {
-        _startDate = picked;
-      });
-    }
   }
 
-  Future<void> _selectStartTime() async {
-    final TimeOfDay? picked = await showTimePicker(
+  Future<void> _selectEndDateTime() async {
+    DateTime tempDateTime = _combineDateAndTime(_endDate, _endTime);
+    
+    showModalBottomSheet(
       context: context,
-      initialTime: _startTime,
+      builder: (BuildContext builder) {
+        return Container(
+          height: 300,
+          color: Theme.of(context).colorScheme.surface,
+          child: Column(
+            children: [
+              // Header with Cancel and Done
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const Text(
+                    'Select End Time',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextButton(
+                    child: Text(
+                      'Done',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _endDate = tempDateTime;
+                        _endTime = TimeOfDay(hour: tempDateTime.hour, minute: tempDateTime.minute);
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+              // DateTime Picker
+              Expanded(
+                child: CupertinoTheme(
+                  data: CupertinoThemeData(
+                    brightness: Brightness.dark,
+                    textTheme: CupertinoTextThemeData(
+                      dateTimePickerTextStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.dateAndTime,
+                    use24hFormat: false, // 12-hour format with AM/PM
+                    initialDateTime: tempDateTime,
+                    minimumDate: _combineDateAndTime(_startDate, _startTime),
+                    maximumDate: DateTime.now().add(const Duration(hours: 1)),
+                    onDateTimeChanged: (DateTime newDateTime) {
+                      tempDateTime = newDateTime;
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
-    if (picked != null) {
-      setState(() {
-        _startTime = picked;
-      });
-    }
-  }
-
-  Future<void> _selectEndDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _endDate,
-      firstDate: _startDate,
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _endDate = picked;
-      });
-    }
-  }
-
-  Future<void> _selectEndTime() async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _endTime,
-    );
-    if (picked != null) {
-      setState(() {
-        _endTime = picked;
-      });
-    }
   }
 
   void _toggleTag(String tag) {
@@ -478,46 +571,58 @@ class _AddCompletedSessionScreenState extends State<AddCompletedSessionScreen> {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _selectStartDate,
-                            icon: const Icon(Icons.calendar_today),
-                            label: Text(DateFormat('MMM d, yyyy').format(_startDate)),
+                    // Start DateTime
+                    OutlinedButton(
+                      onPressed: _selectStartDateTime,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.all(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.play_arrow),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Start',
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                              Text(
+                                '${DateFormat('MMM d, yyyy').format(_startDate)} at ${_startTime.format(context)}',
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _selectStartTime,
-                            icon: const Icon(Icons.access_time),
-                            label: Text(_startTime.format(context)),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    const Center(child: Icon(Icons.arrow_downward, color: Colors.grey)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _selectEndDate,
-                            icon: const Icon(Icons.calendar_today),
-                            label: Text(DateFormat('MMM d, yyyy').format(_endDate)),
+                    const SizedBox(height: 12),
+                    // End DateTime
+                    OutlinedButton(
+                      onPressed: _selectEndDateTime,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.all(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.stop),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'End',
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                              Text(
+                                '${DateFormat('MMM d, yyyy').format(_endDate)} at ${_endTime.format(context)}',
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _selectEndTime,
-                            icon: const Icon(Icons.access_time),
-                            label: Text(_endTime.format(context)),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
