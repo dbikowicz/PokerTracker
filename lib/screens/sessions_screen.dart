@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'account_screen.dart';
+import 'add_completed_session_screen.dart';
 
 class SessionsScreen extends StatelessWidget {
   const SessionsScreen({super.key});
@@ -59,8 +60,14 @@ class SessionsScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      // TODO: Navigate to add completed session
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddCompletedSessionScreen(),
+                        ),
+                      );
+                      // TODO: Refresh sessions list if result is true
                     },
                     icon: const Icon(Icons.add),
                     label: const Text('Add Completed'),
